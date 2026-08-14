@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useSceneFade } from './useScene'
 import { noise3, circleTexture, useDrift } from './helpers'
-import { density } from '../lib/env'
+import { density, isMobile } from '../lib/env'
 import { sceneState, stage } from '../lib/stage'
 
 /**
@@ -117,7 +117,9 @@ export default function IntroScene() {
         />
       </points>
 
-      <group ref={spin} scale={0.78}>
+      {/* Num ecrã estreito não há metade direita para onde o empurrar,
+          por isso encolhe em vez de tapar o texto. */}
+      <group ref={spin} scale={isMobile ? 0.52 : 0.78}>
 
         {/* Esfera polida opaca.
             Aqui houve vidro com refração. Custava uma passagem extra de render

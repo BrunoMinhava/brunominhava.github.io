@@ -110,6 +110,11 @@ export default function Intro() {
             : 'relative flex h-screen w-full items-center overflow-hidden'
         }
       >
+        {/* No telemóvel o objeto é centrado e o texto cai-lhe por cima; o véu
+            resolve isso sem o esconder. No desktop é o mesmo gradiente lateral
+            dos momentos, porque a composição também é a mesma. */}
+        <div className="scrim" aria-hidden="true" />
+
         <div ref={content} className="shell relative z-10">
           <p data-par="0.12" className="t-micro mb-6 text-ash md:mb-10">
             {PROFILE.location} — Portfólio {new Date().getFullYear()}
@@ -129,7 +134,7 @@ export default function Intro() {
           <div data-par="0.34" className="mt-10 max-w-lg border-t hairline pt-6">
             <p className="t-note text-bone/55">
               Construo sites, ferramentas de negócio e sistemas que veem, ouvem e leem.
-              Cinco projetos, três atos — por ordem de acontecimento.
+              Quatro projetos, três atos — por ordem de acontecimento.
             </p>
             <p ref={hint} className="t-micro mt-8 text-ash">
               Desça para começar

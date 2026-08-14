@@ -1,6 +1,6 @@
 # Bruno Minhava — Portfólio
 
-Portfólio pessoal em scroll contínuo: uma viagem cronológica por cinco projetos
+Portfólio pessoal em scroll contínuo: uma viagem cronológica por quatro projetos
 reais do GitHub, agrupados em três atos. Sem páginas separadas — tudo é uma só
 descida, com cenas 3D que se dissolvem umas nas outras.
 

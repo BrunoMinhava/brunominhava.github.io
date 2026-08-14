@@ -139,7 +139,7 @@ export default function About() {
             data-par="0.3"
             className="mt-24 max-w-2xl t-body text-bone/60"
           >
-            <WordsInline text="Trabalho nas quatro ao mesmo tempo, e é isso que faz a diferença: desenho a interface, escrevo o backend, automatizo o que ninguém devia estar a fazer à mão e ensino a máquina a ver o resto. O que vem a seguir são cinco projetos reais, por ordem de acontecimento." />
+            <WordsInline text="Trabalho nas quatro ao mesmo tempo, e é isso que faz a diferença: desenho a interface, escrevo o backend, automatizo o que ninguém devia estar a fazer à mão e ensino a máquina a ver o resto. O que vem a seguir são quatro projetos reais, por ordem de acontecimento." />
           </p>
         </div>
       </div>
