@@ -1,0 +1,51 @@
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Permite republicar à mão a partir do separador Actions, sem novo commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Se forem empurrados dois commits seguidos, só o último é publicado — mas o
+# que já está no ar nunca é interrompido a meio.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` em vez de `install`: instala exatamente o que está no
+      # package-lock, para o site publicado ser o mesmo que foi testado.
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

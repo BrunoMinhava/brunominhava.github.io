@@ -1,0 +1,534 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * Tokens
+ * ------------------------------------------------------------------ */
+@theme {
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --color-void: #08080a;
+  --color-ink: #101015;
+  --color-smoke: #1c1c22;
+  --color-ash: #6b6b76;
+  --color-bone: #ede9e0;
+  --color-chalk: #f7f5f0;
+
+  --color-web: #3fd0ff;
+  --color-automation: #ffb45c;
+  --color-ai: #b98cff;
+
+  /* Uma só família de curvas em todo o site. Saídas longas e desaceleradas
+     para tudo o que entra; a simétrica só para o que sai e volta. */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-swift: var(--ease-swift);
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+* {
+  min-width: 0;
+}
+
+html {
+  background: var(--color-void);
+  /* O scroll suave é do ScrollSmoother; o nativo entraria em conflito. */
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--color-void);
+  color: var(--color-bone);
+  font-family: var(--font-display);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  /* Sem seleção acidental de texto durante o scroll dramático. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* O cursor nativo só desaparece quando o personalizado está mesmo ativo. */
+body[data-cursor='on'],
+body[data-cursor='on'] * {
+  cursor: none !important;
+}
+
+::selection {
+  background: var(--color-bone);
+  color: var(--color-void);
+}
+
+/* ------------------------------------------------------------------ *
+ * ScrollSmoother
+ * ------------------------------------------------------------------ */
+#smooth-wrapper {
+  overflow: hidden;
+}
+
+/* Sem smoother (mobile / reduced motion) o conteúdo scrolla normalmente. */
+html[data-smooth='off'] #smooth-wrapper,
+html[data-smooth='off'] #smooth-content {
+  overflow: visible;
+  transform: none !important;
+}
+
+/* ------------------------------------------------------------------ *
+ * Estrutura das secções
+ * ------------------------------------------------------------------ */
+.shell {
+  width: min(1440px, 100% - 2 * var(--gutter, 2rem));
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    --gutter: 5rem;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Tipografia
+ *
+ * Uma escala fechada, não valores avulsos por componente. A regra é a
+ * clássica: quanto maior o corpo, mais apertado o espacejamento — o que num
+ * título de 14rem é aperto, num rótulo de 11px seria ilegível, e por isso as
+ * micro-etiquetas vão no sentido contrário.
+ * ------------------------------------------------------------------ */
+.t-hero,
+.t-display,
+.t-heading,
+.t-stat,
+.t-count {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-wrap: balance;
+  font-optical-sizing: auto;
+}
+
+.t-hero {
+  font-size: clamp(3.25rem, 13vw, 14rem);
+  letter-spacing: -0.055em;
+  line-height: 0.82;
+}
+
+.t-display {
+  font-size: clamp(2.75rem, 9.5vw, 10rem);
+  letter-spacing: -0.05em;
+  line-height: 0.86;
+}
+
+.t-heading {
+  font-size: clamp(2rem, 5.2vw, 5rem);
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+}
+
+.t-stat {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.t-count {
+  font-size: clamp(4rem, 16vw, 15rem);
+  letter-spacing: -0.05em;
+  line-height: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Voz editorial — o único sítio onde entra serifa, e sempre em itálico. */
+.t-lead {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 2.35vw, 2.1rem);
+  letter-spacing: -0.012em;
+  line-height: 1.16;
+}
+
+.t-body {
+  font-size: clamp(0.95rem, 1.02vw, 1.0625rem);
+  letter-spacing: -0.004em;
+  line-height: 1.62;
+}
+
+.t-note {
+  font-size: 0.875rem;
+  letter-spacing: -0.002em;
+  line-height: 1.6;
+}
+
+/* Micro-etiquetas: mono, caixa alta, muito espacejadas. */
+.t-micro,
+.t-nano {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.t-micro {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+}
+
+.t-nano {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+}
+
+/* Fio de 1px à mesma opacidade em toda a parte. Um traço mais escuro num
+   sítio e mais claro noutro é o tipo de inconsistência que se sente sem se
+   conseguir apontar. */
+.hairline {
+  border-color: color-mix(in srgb, var(--color-bone) 10%, transparent);
+}
+
+.hairline-dark {
+  border-color: color-mix(in srgb, var(--color-void) 14%, transparent);
+}
+
+/* Máscara para revelações letra a letra e linha a linha. */
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.char,
+.word {
+  display: inline-block;
+  will-change: transform, opacity;
+  /* Descendentes (g, y, p) não podem ser cortadas pela máscara. */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+/* Número gigante de fundo de cada momento. */
+.ghost-index {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  line-height: 0.7;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--accent) 22%, transparent);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Cursor personalizado
+ * ------------------------------------------------------------------ */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.cursor__ring,
+.cursor__dot {
+  position: absolute;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.45s var(--ease-swift),
+    height 0.45s var(--ease-swift),
+    border-radius 0.45s var(--ease-swift),
+    opacity 0.35s ease,
+    border-width 0.35s ease,
+    background-color 0.35s ease;
+}
+
+.cursor__ring {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-bone);
+}
+
+.cursor__dot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-bone);
+}
+
+.cursor__label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-bone);
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+/* --- variações por secção --- */
+.cursor[data-mode='intro'] .cursor__ring {
+  width: 56px;
+  height: 56px;
+  opacity: 0.35;
+}
+
+.cursor[data-mode='read'] .cursor__ring {
+  width: 90px;
+  height: 90px;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--color-bone) 90%, transparent);
+}
+.cursor[data-mode='read'] .cursor__dot {
+  opacity: 0;
+}
+
+.cursor[data-mode='view'] .cursor__ring {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+.cursor[data-mode='view'] .cursor__dot {
+  opacity: 0;
+}
+
+.cursor[data-mode='node'] .cursor__ring {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border-width: 1px;
+  rotate: 45deg;
+}
+
+.cursor[data-mode='scan'] .cursor__ring {
+  width: 64px;
+  height: 3px;
+  border-radius: 0;
+  background: var(--color-bone);
+  border-color: transparent;
+}
+.cursor[data-mode='scan'] .cursor__dot {
+  opacity: 0;
+}
+
+.cursor[data-mode='pulse'] .cursor__ring {
+  width: 46px;
+  height: 46px;
+  border-width: 1px;
+  animation: cursor-pulse 2.4s ease-in-out infinite;
+}
+
+.cursor[data-mode='invert'] {
+  mix-blend-mode: normal;
+}
+.cursor[data-mode='invert'] .cursor__ring {
+  width: 44px;
+  height: 44px;
+  border-color: var(--color-void);
+}
+.cursor[data-mode='invert'] .cursor__dot {
+  background: var(--color-void);
+}
+.cursor[data-mode='invert'] .cursor__label {
+  color: var(--color-void);
+}
+
+/* Sobre um link, o cursor engrossa e mostra a etiqueta. */
+.cursor[data-hover='true'] .cursor__ring {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
+  rotate: 0deg;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--color-bone) 88%, transparent);
+}
+.cursor[data-hover='true'][data-mode='invert'] .cursor__ring {
+  background: color-mix(in srgb, var(--color-void) 88%, transparent);
+}
+.cursor[data-hover='true'] .cursor__dot {
+  opacity: 0;
+}
+.cursor[data-hover='true'] .cursor__label {
+  opacity: 1;
+}
+
+@keyframes cursor-pulse {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 0.9;
+  }
+  50% {
+    scale: 1.28;
+    opacity: 0.4;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Grão e vinheta
+ * ------------------------------------------------------------------ */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: var(--grain-src);
+  background-size: 180px 180px;
+  will-change: transform;
+  animation: grain-shift 0.7s steps(4) infinite;
+}
+
+html[data-tier='low'] .grain {
+  animation: none;
+}
+
+@keyframes grain-shift {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-3%, 2%);
+  }
+  50% {
+    transform: translate(2%, -3%);
+  }
+  75% {
+    transform: translate(-2%, -2%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 42%, rgb(0 0 0 / 0.55) 100%);
+  transition: opacity 0.8s var(--ease-swift);
+}
+
+/* Sobre a secção clara, a vinheta quase desaparece. */
+html[data-invert='true'] .vignette {
+  opacity: 0.12;
+}
+
+html[data-invert='true'] .grain {
+  opacity: 0.03;
+}
+
+/* Véu que garante contraste do texto sobre o canvas 3D, sem o esconder. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgb(8 8 10 / 0.92) 0%,
+    rgb(8 8 10 / 0.78) 32%,
+    rgb(8 8 10 / 0.28) 58%,
+    transparent 78%
+  );
+}
+
+@media (max-width: 1023px) {
+  .scrim {
+    background: rgb(8 8 10 / 0.7);
+  }
+}
+
+/* Faixas por trás do cromo fixo: sem elas o texto das secções passa por baixo
+   da assinatura e do progresso e os dois tornam-se ilegíveis ao mesmo tempo. */
+.hud-veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7.5rem;
+  pointer-events: none;
+}
+
+.hud-veil--top {
+  top: 0;
+  background: linear-gradient(to bottom, rgb(8 8 10 / 0.85), transparent);
+}
+
+.hud-veil--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgb(8 8 10 / 0.85), transparent);
+}
+
+html[data-invert='true'] .hud-veil--top {
+  background: linear-gradient(to bottom, rgb(237 233 224 / 0.85), transparent);
+}
+
+html[data-invert='true'] .hud-veil--bottom {
+  background: linear-gradient(to top, rgb(237 233 224 / 0.85), transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * Links
+ * ------------------------------------------------------------------ */
+.link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -0.12em;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.55s var(--ease-swift);
+}
+
+.link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ------------------------------------------------------------------ *
+ * Acessibilidade
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+  .cursor {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
