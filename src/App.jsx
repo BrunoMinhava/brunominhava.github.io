@@ -1,6 +1,6 @@
 import { Fragment, Suspense, lazy, useLayoutEffect, useRef, useState } from 'react'
 import { gsap, ScrollTrigger, ScrollSmoother } from './lib/gsap'
-import { features, isSafari, isMobile, use3D } from './lib/env'
+import { features, isSafari, isMobile, use3D, prefersReducedMotion } from './lib/env'
 import { stage } from './lib/stage'
 import { useMagnetic } from './hooks/useMagnetic'
 import { ACTS, ACT_ORDER, projectsOfAct } from './data/projects'
@@ -14,6 +14,8 @@ import ActMarker from './components/ActMarker'
 import Intro from './sections/Intro'
 import About from './sections/About'
 import Contact from './sections/Contact'
+import Services from './sections/Services'
+import Resume from './sections/Resume'
 
 // O three.js só entra na página se houver WebGL e vontade de movimento.
 const Stage3D = lazy(() => import('./components/Stage3D'))
@@ -95,8 +97,8 @@ export default function App() {
       if (target === null) return
       e.preventDefault()
       if (smoother) smoother.scrollTo(target, true, 'top top')
-      else if (target === 0) window.scrollTo({ top: 0, behavior: 'smooth' })
-      else target.scrollIntoView({ behavior: 'smooth' })
+      else if (target === 0) window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'instant' : 'smooth' })
+      else target.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth' })
     }
     document.addEventListener('click', onAnchor)
 
@@ -141,6 +143,7 @@ export default function App() {
           {ready && (
             <main id="top">
               <Intro />
+              <Services />
               <About />
 
               {ACT_ORDER.map((actId) => (
@@ -152,6 +155,7 @@ export default function App() {
                 </Fragment>
               ))}
 
+              <Resume />
               <Contact />
             </main>
           )}

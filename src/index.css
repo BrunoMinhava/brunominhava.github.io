@@ -22,7 +22,7 @@
   /* Uma só família de curvas em todo o site. Saídas longas e desaceleradas
      para tudo o que entra; a simétrica só para o que sai e volta. */
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-swift: var(--ease-swift);
+  --ease-swift: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
@@ -531,4 +531,101 @@ html[data-invert='true'] .hud-veil--bottom {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* Serviços e currículo: o mesmo tom editorial, com espaço para leitura. */
+.professional-section { position: relative; padding-block: clamp(7rem, 12vw, 12rem); background: #080b11; }
+.services-section { background: radial-gradient(ellipse at 85% 0%, #102749 0, transparent 48%), #080b11; }
+.resume-section { background: #0b0d12; }
+.section-intro { display: grid; grid-template-columns: 1.4fr 1fr; align-items: end; gap: 5rem; margin-bottom: 5rem; }
+.section-intro .t-heading { line-height: 1.05; }
+.eyebrow, .resume-label, .career-period, .service-number { font-family: var(--font-mono); font-size: .6875rem; letter-spacing: .15em; text-transform: uppercase; }
+.eyebrow { color: #8ca9ce; margin-bottom: 1.75rem; line-height: 1.8; }
+.blue-text { color: #579aff; }
+.section-description { max-width: 28rem; font-size: 1.0625rem; line-height: 1.8; color: #a3acba; }
+.service-row { display: grid; grid-template-columns: 2rem 3.5rem 1.2fr 1fr 1.5rem; align-items: center; gap: 1.75rem; padding: 2.6rem 0; border-top: 1px solid #ffffff19; color: inherit; text-decoration: none; transition: background .3s, border-color .3s; }
+.service-row:hover { background: #428dff08; border-color: #579aff80; }
+.service-number { color: #8290a4; }
+.service-icon { width: 3.5rem; height: 3.5rem; display: grid; place-items: center; border: 1px solid #579aff35; border-radius: 50%; color: #70acff; background: #579aff09; }
+.service-icon svg { width: 1.5rem; height: 1.5rem; }
+.service-name h3 { font-size: clamp(1.2rem, 1.9vw, 1.8rem); font-weight: 500; line-height: 1.2; letter-spacing: -.035em; max-width: 24rem; }
+.service-tags { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-top: .9rem; font-size: .7rem; color: #8596ac; }
+.service-row > p { color: #a3acba; font-size: .9rem; line-height: 1.75; }
+.service-arrow { font-size: 1.5rem; color: #70acff; transition: transform .3s; }
+.service-row:hover .service-arrow { transform: translate(3px, -3px); }
+.service-footer { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #ffffff19; }
+.service-footer p { color: #8b98aa; font-size: .875rem; }
+.action-link { display: inline-flex; align-items: center; gap: 1.25rem; color: inherit; text-decoration: none; font-size: .875rem; border-bottom: 1px solid #ffffff40; padding: .7rem 0; }
+.action-link:hover { color: #78b0ff; border-color: currentColor; }
+.primary-action { display: inline-flex; align-items: center; justify-content: space-between; gap: 1.5rem; background: #ede9e0; color: #08080a; padding: .95rem 1.2rem; font-size: .8rem; font-weight: 500; text-decoration: none; transition: background .2s; }
+.primary-action:hover { background: #a5ceff; }
+.intro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; margin-top: 1.5rem; }
+.site-nav { position: absolute; right: 2.5rem; top: 2rem; display: flex; gap: 2rem; }
+.site-nav a { color: inherit; opacity: .75; }
+.site-nav a:hover, .site-nav a:focus-visible { opacity: 1; }
+.resume-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: clamp(3rem, 7vw, 8rem); }
+.resume-label { color: #9caabe; padding-bottom: 1.4rem; border-bottom: 1px solid #ffffff1f; margin-bottom: 2rem; }
+.timeline { border-left: 1px solid #579aff40; padding-left: 2rem; margin-left: .3rem; }
+.career-entry { position: relative; padding-bottom: 3rem; }
+.career-entry:last-child { padding-bottom: 0; }
+.career-entry::before { content: ''; position: absolute; width: .55rem; height: .55rem; background: #579aff; border-radius: 50%; left: -2.3rem; top: .25rem; box-shadow: 0 0 0 5px #0b0d12; }
+.career-period { color: #78a9ec; margin-bottom: .9rem; }
+.career-entry h4, .education-card h4 { font-size: clamp(1.35rem, 2.2vw, 2rem); font-weight: 500; line-height: 1.25; letter-spacing: -.03em; }
+.career-role { font-size: .875rem; color: #c0c9d5; margin-top: .75rem; line-height: 1.65; }
+.career-description, .career-entry li { color: #99a3b2; font-size: .9rem; line-height: 1.8; }
+.career-description { margin-top: 1.2rem; }
+.career-entry ul { list-style: disc; padding-left: 1rem; margin-top: 1rem; }
+.career-entry li { padding-left: .3rem; margin-top: .5rem; }
+.career-entry li::marker { color: #579aff; }
+.education-label { margin-top: 4rem; }
+.education-card { border: 1px solid #ffffff1a; padding: 2rem; background: linear-gradient(135deg, #13223a66, transparent); }
+.education-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.education-top .career-period { margin: 0; }
+.grade { font-size: 2rem; font-weight: 500; color: #91bfff; letter-spacing: -.05em; }
+.grade span { font-size: 1rem; color: #91a1b8; }
+.pap { border-top: 1px solid #ffffff1a; margin-top: 1.8rem; padding-top: 1.5rem; }
+.pap .eyebrow { margin-bottom: .6rem; font-size: .6rem; }
+.pap h5 { font-size: 1rem; font-weight: 500; }
+.pap > p:last-child { color: #99a3b2; font-size: .85rem; line-height: 1.75; margin-top: .6rem; }
+.skill-group { margin-bottom: 2rem; }
+.skill-group h4 { font-size: .95rem; line-height: 1.5; font-weight: 500; margin-bottom: .9rem; }
+.skill-group ul { display: flex; flex-wrap: wrap; gap: .5rem; }
+.skill-group li { border: 1px solid #ffffff17; background: #ffffff03; color: #a6b2c2; padding: .45rem .7rem; font-size: .75rem; line-height: 1.4; }
+.languages { margin-top: 3rem; }
+.languages > p { display: flex; justify-content: space-between; margin-bottom: .8rem; font-size: .9rem; }
+.languages > p span:last-child { color: #89ace0; }
+.languages small { display: block; color: #8b98aa; font-size: .75rem; line-height: 1.7; margin-top: 1.25rem; }
+.contact-intro { max-width: 34rem; font-size: 1rem; line-height: 1.75; margin-top: 2rem; color: #494950; }
+a:focus-visible, button:focus-visible { outline: 2px solid #579aff; outline-offset: 6px; }
+@media (max-width: 1023px) {
+  .site-nav { right: 1.5rem; top: 1.5rem; gap: 1.2rem; }
+  .section-intro { gap: 2rem; }
+  .service-row { grid-template-columns: 2.75rem 1fr 1.5rem; gap: 1.25rem; }
+  .service-number { display: none; }
+  .service-icon { width: 2.75rem; height: 2.75rem; }
+  .service-row > p { grid-column: 2; }
+  .service-arrow { grid-column: 3; grid-row: 1; }
+  .resume-layout { gap: 2.5rem; }
+}
+@media (max-width: 640px) {
+  .site-nav { top: 3.8rem; left: 1.5rem; right: 1.5rem; justify-content: space-between; gap: .65rem; }
+  .site-nav .t-micro { font-size: .6rem; letter-spacing: .1em; padding-block: .5rem; }
+  .hud-veil--top { height: 9rem; }
+  .section-intro { grid-template-columns: 1fr; margin-bottom: 3rem; }
+  .section-description { font-size: .95rem; }
+  .professional-section { padding-block: 7rem; }
+  .service-row { padding-block: 2rem; gap: 1rem; }
+  .service-tags { font-size: .65rem; gap: .4rem .75rem; }
+  .service-footer { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .resume-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .education-card { padding: 1.4rem; }
+  .timeline { padding-left: 1.5rem; }
+  .career-entry::before { left: -1.8rem; }
+  .intro-actions { gap: 1rem; }
+}
+
+@media (max-width: 640px) {
+  #servicos, #curriculo, #contacto, #wonderstatus { scroll-margin-top: 5.5rem; }
+  .hud-veil--top { background: linear-gradient(to bottom, #08080a 0, #08080af5 5.5rem, transparent 9rem); }
+  html[data-invert='true'] .hud-veil--top { background: linear-gradient(to bottom, #f7f5f0 0, #f7f5f0f5 5.5rem, transparent 9rem); }
 }

@@ -133,9 +133,10 @@ export default function Intro() {
               pista de scroll por cima de vidro iluminado não se lê. */}
           <div data-par="0.34" className="mt-10 max-w-lg border-t hairline pt-6">
             <p className="t-note text-bone/55">
-              Construo sites, ferramentas de negócio e sistemas que veem, ouvem e leem.
-              Quatro projetos, três atos — por ordem de acontecimento.
+              Desenvolvimento web, aplicações e automação.
+              Soluções digitais e apoio técnico para particulares e empresas.
             </p>
+            <div className="intro-actions"><a className="primary-action" href="#servicos">Conhecer os serviços <span aria-hidden="true">↗</span></a><a className="action-link" href="#wonderstatus">Ver projetos <span aria-hidden="true">↓</span></a></div>
             <p ref={hint} className="t-micro mt-8 text-ash">
               Desça para começar
               <span className="ml-3 inline-block animate-pulse">↓</span>

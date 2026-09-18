@@ -60,7 +60,7 @@ export default function Contact() {
       >
         <div ref={content} className="shell relative z-10 opacity-0">
           <p data-par="0" className="t-micro mb-10 text-void/40">
-            07 / Fim da viagem
+            07 / Vamos trabalhar juntos
           </p>
 
           <Chars
@@ -71,6 +71,8 @@ export default function Contact() {
             className="t-display"
           />
 
+          <p className="contact-intro">Tem uma ideia, um processo para simplificar ou precisa de apoio técnico? Conte-me o que procura.</p>
+
           <div
             data-par="0.26"
             className="mt-20 grid grid-cols-12 items-end gap-x-6 gap-y-10 border-t hairline-dark pt-10"
@@ -80,7 +82,7 @@ export default function Contact() {
               <a
                 className="link display block text-[clamp(1.25rem,3.6vw,3rem)] tracking-tight"
                 href={`mailto:${PROFILE.email}`}
-                data-cursor-label="Copiar"
+                data-cursor-label="Email"
                 data-magnetic
               >
                 {PROFILE.email}
@@ -88,19 +90,6 @@ export default function Contact() {
             </div>
 
             <div className="col-span-12 flex gap-10 lg:col-span-5 lg:justify-end">
-              <div>
-                <p className="t-micro mb-4 text-void/40">Perfil</p>
-                <a
-                  className="link display text-[clamp(1.1rem,2vw,1.75rem)]"
-                  href={PROFILE.linkedin}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  data-cursor-label="Abrir"
-                  data-magnetic
-                >
-                  LinkedIn ↗
-                </a>
-              </div>
               <div>
                 <p className="t-micro mb-4 text-void/40">Código</p>
                 <a

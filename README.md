@@ -1,7 +1,7 @@
 # Bruno Minhava — Portfólio
 
 Portfólio pessoal em scroll contínuo: uma viagem cronológica por quatro projetos
-reais do GitHub, agrupados em três atos. Sem páginas separadas — tudo é uma só
+reais do GitHub, agrupados em três atos, com serviços profissionais e currículo. Sem páginas separadas — tudo é uma só
 descida, com cenas 3D que se dissolvem umas nas outras.
 
 **No ar:** <https://brunominhava.github.io>
@@ -20,6 +20,7 @@ npm run lint
 |---|---|---|
 | — | Cortina de entrada com contador | — |
 | 00 | Intro — nome que cai e se abre em cortina | vidro iridescente com núcleo aceso |
+| S | Serviços — web, apps, automação, computadores e redes sociais | — |
 | 01 | Sobre — as quatro palavras | fios que convergem e voltam a abrir |
 | **Ato I** | Web | — |
 | 02 | Wonderstatus.pt | captura do site em produção, num painel a flutuar |
@@ -28,6 +29,7 @@ npm run lint
 | 04 | Tercavia Stock | captura real + estante varrida por um feixe |
 | **Ato III** | Inteligência Artificial | — |
 | 05 | NeuroVision | captura real + nuvem de pontos por trás |
+| 06 | Currículo — experiência, formação, competências e idiomas | — |
 | 07 | Contacto | nenhuma — fundo claro, o contraste é o efeito |
 
 Cada projeto mostra uma **captura real do produto a funcionar** num painel a
@@ -51,7 +53,7 @@ src/
 │                         preguiçoso da cena, dissolução, fixação, parallax
 ├── components/           Preloader, Cursor, HUD, Grain, Stage3D, Moment,
 │                         ActMarker, Reveal
-├── sections/             Intro, About, Contact
+├── sections/             Intro, Services, About, Resume, Contact
 └── three/                uma cena por ficheiro + helpers partilhados
 ```
 
@@ -61,13 +63,16 @@ re-render do React por cada frame de scroll.
 
 ## Editar o conteúdo
 
-Tudo o que é texto, tecnologias, números e links está em
+Os dados do perfil e dos projetos (tecnologias, números e links) estão em
 [`src/data/projects.js`](src/data/projects.js). Acrescentar um projeto é
 acrescentar uma entrada ao array `PROJECTS`; o momento, o HUD e o cursor
 constroem-se a partir dela.
 
-**Por fazer:** o URL do LinkedIn em `PROFILE.linkedin` é um palpite —
-confirmar e corrigir.
+Os serviços, a experiência e as competências estão em `src/data/career.js`.
+A formação e o resumo profissional estão em `src/sections/Resume.jsx`.
+Os dados curriculares foram recuperados da conversa «CV Completo Informática».
+O LinkedIn foi retirado dos contactos porque o endereço anterior não estava confirmado.
+Os pedidos de serviço abrem o email com o assunto preenchido; não existe backend de formulários.
 
 Para um projeto novo com cena 3D própria: criar `src/three/NovaCena.jsx` (usar
 `useSceneFade('id', ref)`), registá-la no mapa `SCENES` de

@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import { gsap, ScrollTrigger } from '../lib/gsap'
 import { focusStore } from '../lib/stage'
-import { PROFILE } from '../data/projects'
 
 /**
  * Cromo fixo da página: assinatura, momento atual e barra de progresso.
@@ -62,20 +61,10 @@ export default function HUD() {
       </a>
 
       {/* Atalhos */}
-      <nav className="pointer-events-auto absolute right-6 top-6 flex gap-6 lg:right-10 lg:top-8">
-        <a
-          className={`t-micro link ${dim}`}
-          href={PROFILE.github}
-          target="_blank"
-          rel="noreferrer noopener"
-          data-cursor-label="GitHub"
-          data-magnetic
-        >
-          GitHub
-        </a>
-        <a className={`t-micro link ${dim}`} href="#contacto" data-cursor-label="Falar" data-magnetic>
-          Contacto
-        </a>
+      <nav aria-label="Navegação principal" className="site-nav pointer-events-auto">
+        {[['#servicos', 'Serviços'], ['#wonderstatus', 'Projetos'], ['#curriculo', 'Currículo'], ['#contacto', 'Contacto']].map(([href, label]) => (
+          <a key={href} className={`t-micro link ${dim}`} href={href} data-cursor-label="Ver">{label}</a>
+        ))}
       </nav>
 
       {/* Momento atual */}

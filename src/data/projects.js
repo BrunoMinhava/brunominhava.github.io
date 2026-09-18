@@ -13,9 +13,7 @@ export const PROFILE = {
   role: 'web designer + developer + automação + IA',
   email: 'brunominhava23@outlook.pt',
   github: 'https://github.com/BrunoMinhava',
-  // TODO: substituir pelo URL real do perfil.
-  linkedin: 'https://www.linkedin.com/in/brunominhava/',
-  location: 'Portugal',
+  location: 'Vila Real, Portugal',
 }
 
 /** Paleta por ato — cada ato tem a sua temperatura de cor. */
