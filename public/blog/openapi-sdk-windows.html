@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What broke on Windows while generating a TypeScript SDK from OpenAPI — Bruno Minhava</title>
+  <meta name="description" content="A practical write-up of Windows, Node.js, generator, test and CI issues found while building a generated Documenso TypeScript SDK." />
+  <link rel="stylesheet" href="/blog/blog.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Blog navigation">
+      <a class="brand" href="/">Bruno Minhava</a>
+      <div class="nav-links">
+        <a href="/blog/">All articles</a>
+        <a href="https://github.com/BrunoMinhava/documenso-sdk" target="_blank" rel="noreferrer noopener">Repository ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <header class="article-header">
+      <div class="shell">
+        <p class="kicker">OpenAPI · TypeScript · Windows</p>
+        <h1>What broke on Windows while generating a TypeScript SDK from OpenAPI</h1>
+        <p class="article-summary">Generators are most useful when they remove repetition. Testing one on a less forgiving environment is useful for the opposite reason: it exposes the assumptions hidden inside the happy path.</p>
+        <div class="article-meta-row"><span>Bruno Minhava</span><span>08 Oct 2026</span><span>~7 min read</span></div>
+      </div>
+    </header>
+
+    <article class="article">
+      <p>I recently built an unofficial TypeScript SDK for the Documenso v2 API using the Voxgig SDK generator. The task itself was deliberately time-boxed, which made the developer experience matter as much as the final generated code. I was not trying to hand-write a perfect client. I was trying to see how quickly I could go from an OpenAPI definition to a working SDK that I could inspect, test and call against the real API.</p>
+
+      <p>I did the work on Windows. That turned out to be useful, because several small assumptions that are invisible on a Unix-like system became visible almost immediately.</p>
+
+      <h2>Starting point: OpenAPI in, SDK out</h2>
+
+      <p>The attraction of an SDK generator is obvious: an API definition already contains a lot of structure. If a tool can turn that into entities, methods, types, tests and documentation, the developer gets a large amount of consistent code without writing each endpoint by hand.</p>
+
+      <p>For Documenso, the generated SDK exposed the API as semantic entities. The basic shape looked like this:</p>
+
+<pre><code>const client = new Documenso2SDK({
+  apikey: process.env.DOCUMENSO2_APIKEY,
+})
+
+const documents = await client.Document().list()</code></pre>
+
+      <p>That is a much nicer surface than manually building paths, headers and query strings for every request. The interesting part of the exercise, though, was not the syntax. It was getting from the generator's first command to a repository I trusted.</p>
+
+      <h2>The first Windows-specific failure: spawning npm</h2>
+
+      <p>The scaffold attempted to run npm automatically, but on my Windows environment that step failed with <code>spawn npm ENOENT</code>. The same project could continue once I entered the generated SDK directory and ran <code>npm install</code> manually.</p>
+
+      <p>This is a classic cross-platform tooling problem. A command can be installed and available to a human in a shell while still being unavailable to a child process depending on how the process is spawned, what executable name is used, and how the environment is inherited.</p>
+
+      <p>From a user perspective the important thing is not the internal cause. The important thing is that the scaffold had already created enough of the project for a manual install to recover it. That is much better than a failure that leaves an unknown half-state.</p>
+
+      <p>If I were improving this path, I would do two things: make command resolution explicitly cross-platform, and make the error message say what the recovery command is. Something as simple as “automatic npm install failed; run <code>npm install</code> in <code>.sdk</code>” turns a confusing failure into a short detour.</p>
+
+      <h2>Version floors should fail clearly</h2>
+
+      <p>I was using Node 22. During installation I saw <code>EBADENGINE</code> warnings from dependencies that required Node 24 or newer.</p>
+
+      <p>Warnings like this are easy to ignore because the installation can appear to continue. But generator tooling has a long dependency chain, and using a runtime below the supported floor creates ambiguity: if something fails later, is the generator wrong, is the project wrong, or am I simply running an unsupported Node version?</p>
+
+      <p>For developer tooling I prefer an early, explicit runtime check. If Node 24 is the real supported floor, the CLI should ideally tell me before scaffolding anything. It makes support easier for maintainers and removes one whole class of doubt for users.</p>
+
+      <h2>Generated imports that looked valid but did not resolve</h2>
+
+      <p>The next failure was more interesting. Generation stopped because an Aontu source file could not be found:</p>
+
+<pre><code>source not found: api/api-info.aontu</code></pre>
+
+      <p>The file existed. The generated model referenced it like this:</p>
+
+<pre><code>@"api/api-info.aontu"</code></pre>
+
+      <p>Changing the import to an explicitly relative path fixed the problem:</p>
+
+<pre><code>@"./api/api-info.aontu"</code></pre>
+
+      <p>I had to apply the same pattern to several generated model areas such as entities, features, targets, flows and tests.</p>
+
+      <p>I would be careful about calling this a core Aontu bug. I encountered it through the generated Voxgig model, and I did not isolate every layer independently. What I can say confidently is that in my environment the generated imports did not resolve until they were made explicitly relative.</p>
+
+      <p>The positive part was the resolver output. It showed where the tool had looked, which gave me enough evidence to stop searching for a missing file and start questioning path interpretation instead.</p>
+
+      <h2>Partial scaffolds create second-order failures</h2>
+
+      <p>Because the first scaffold had not completed cleanly, the TypeScript target was missing. I added it explicitly with:</p>
+
+<pre><code>npx voxgig-sdkgen target add ts</code></pre>
+
+      <p>I also hit a zero-byte <code>.sdk/.jostraca</code> file where a directory was expected. Renaming that file allowed the expected directory structure to be created.</p>
+
+      <p>These were not the headline problems, but they were a useful reminder that setup failures often create follow-up failures. Once a bootstrap process aborts halfway through, every later error has to be read with the possibility that the project is not in a normal state.</p>
+
+      <p>A robust generator should either roll back incomplete bootstrap work, or record enough state to resume safely. “Idempotent setup” sounds boring until you need it.</p>
+
+      <h2>Generated tests can still contain platform assumptions</h2>
+
+      <p>After generation succeeded, the TypeScript project itself hit another Windows issue. The test/build script used a Unix command:</p>
+
+<pre><code>rm -rf dist dist-test</code></pre>
+
+      <p>That is fine in many shells and fails in a standard Windows command environment. I worked around it by cleaning the directories manually and running the TypeScript compilation and tests directly.</p>
+
+      <p>The result was encouraging: 296 tests were discovered, 295 passed, none failed, and one was skipped.</p>
+
+      <p>The distinction matters. The SDK code was healthy; the wrapper script was not cross-platform. Without separating those two things, it would be easy to report “tests fail on Windows” when the actual problem is only the cleanup command that runs before them.</p>
+
+      <p>For reusable developer tooling, I would avoid shell-specific filesystem commands in package scripts. A small Node script or a cross-platform package makes the intent portable and removes one more environmental variable.</p>
+
+      <h2>Local tests were not enough</h2>
+
+      <p>I also made a real authenticated request using the generated client. Calling <code>Document().list()</code> returned an empty list, which was the expected result for the account I used. That gave me a different kind of confidence than unit tests: authentication, request construction, transport and response parsing all worked together against the live service.</p>
+
+      <p>Finally, I pushed the project to GitHub and let CI and the documentation workflow run there. That caught a prose-quality issue in generated documentation that I would not have seen from the SDK test suite alone. After adjusting the source description and regenerating, the workflows passed.</p>
+
+      <div class="callout"><strong>The useful pattern was layered verification:</strong> generator succeeds → project compiles → unit tests pass → one real API call works → CI and documentation checks pass. Each layer answers a different question.</div>
+
+      <h2>What I would change in a generator after this experience</h2>
+
+      <p>None of the issues above made the core idea of generation less useful. They mostly showed where a good generator can make itself feel more reliable:</p>
+
+      <ul>
+        <li>Resolve package-manager commands in a platform-safe way.</li>
+        <li>Check the Node runtime version before scaffolding.</li>
+        <li>Generate explicit relative imports when local path semantics matter.</li>
+        <li>Make setup resumable or cleanly reversible after an aborted scaffold.</li>
+        <li>Avoid Unix-only shell commands in generated package scripts.</li>
+        <li>Keep detailed errors. They shorten debugging much more than generic “generation failed” messages do.</li>
+      </ul>
+
+      <p>The main lesson for me was that generated code is only part of the product. The install path, error messages, scripts and CI templates are also generated developer experience. If any of those make assumptions about the user's machine, the user experiences the whole generator as unreliable even when the SDK output itself is good.</p>
+
+      <p>That is why I like testing tools like this on Windows. It is not about proving one operating system is harder than another. It is about finding assumptions while they are still cheap to fix.</p>
+
+      <div class="article-footer">
+        <a href="/blog/">← All articles</a>
+        <a href="https://github.com/BrunoMinhava/documenso-sdk" target="_blank" rel="noreferrer noopener">View the SDK repository ↗</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>
