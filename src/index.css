@@ -608,8 +608,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid #579aff; outline-offs
   .resume-layout { gap: 2.5rem; }
 }
 @media (max-width: 640px) {
-  .site-nav { top: 3.8rem; left: 1.5rem; right: 1.5rem; justify-content: space-between; gap: .65rem; }
-  .site-nav .t-micro { font-size: .6rem; letter-spacing: .1em; padding-block: .5rem; }
+  .site-nav { top: 3.8rem; left: 1rem; right: 1rem; justify-content: space-between; gap: .45rem; }
+  .site-nav .t-micro { font-size: .54rem; letter-spacing: .075em; padding-block: .5rem; }
   .hud-veil--top { height: 9rem; }
   .section-intro { grid-template-columns: 1fr; margin-bottom: 3rem; }
   .section-description { font-size: .95rem; }
