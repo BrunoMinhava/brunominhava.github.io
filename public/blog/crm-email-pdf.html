@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a small CRM around email and PDFs: the messy parts that matter — Bruno Minhava</title>
+  <meta name="description" content="Practical notes from building a self-hosted CRM with FastAPI, SQLite, IMAP, PDF parsing, Excel reconciliation and web push." />
+  <link rel="stylesheet" href="/blog/blog.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Blog navigation">
+      <a class="brand" href="/">Bruno Minhava</a>
+      <div class="nav-links">
+        <a href="/blog/">All articles</a>
+        <a href="https://github.com/BrunoMinhava/zentrion-crm" target="_blank" rel="noreferrer noopener">Repository ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <header class="article-header">
+      <div class="shell">
+        <p class="kicker">Python · FastAPI · Automation</p>
+        <h1>Building a small CRM around email and PDFs: the messy parts that matter</h1>
+        <p class="article-summary">The CRUD was the easy part. The real engineering work was deciding what automation is allowed to change when email, PDFs, spreadsheets and humans all describe the same business process.</p>
+        <div class="article-meta-row"><span>Bruno Minhava</span><span>08 Oct 2026</span><span>~7 min read</span></div>
+      </div>
+    </header>
+
+    <article class="article">
+      <p>Zentrion started from a very ordinary business problem: customer quotes were being followed through email, spreadsheets and memory. The technical goal was not to build a “CRM platform” in the abstract. It was to reduce the amount of manual checking around a specific workflow without forcing a small team to abandon the tools they already used.</p>
+
+      <p>The public version is a demo with fictional data, but the shape of the problem is real: outgoing quote emails, supplier purchase-order PDFs, follow-ups, reminders, manual edits and an Excel file that people still want to open.</p>
+
+      <p>That combination is why the interesting part of the project was never basic CRUD.</p>
+
+      <h2>The system has more than one source of truth</h2>
+
+      <p>A simple tutorial application usually has one database and one UI. A business automation tool often has several competing representations of the same event.</p>
+
+      <p>For one customer quote, information can exist in:</p>
+
+      <ul>
+        <li>an outgoing email;</li>
+        <li>a PDF attachment;</li>
+        <li>the CRM database;</li>
+        <li>an Excel mirror;</li>
+        <li>a manual note entered by a person later.</li>
+      </ul>
+
+      <p>If the application treats every new machine-readable value as “truth”, the automation can destroy useful human work. If it treats every manual value as untouchable forever, the automation becomes stale.</p>
+
+      <p>The problem is therefore not only extraction. It is reconciliation.</p>
+
+      <h2>Email ingestion is easy until the emails are real</h2>
+
+      <p>The CRM uses IMAP to pull messages and look for quote references such as OR/FT identifiers in subjects, bodies and PDF text. Conceptually the pipeline is straightforward:</p>
+
+<pre><code>IMAP mailbox
+    ↓
+extract message + attachments
+    ↓
+find quote reference
+    ↓
+derive lifecycle state
+    ↓
+update database
+    ↓
+mirror relevant fields to Excel</code></pre>
+
+      <p>The difficulty is that real email is inconsistent. References can be written in slightly different forms. Replies can quote old content. A PDF can contain the useful identifier while the subject does not. A customer can reply from a different thread. A parser that works on ten clean examples can become unreliable very quickly.</p>
+
+      <p>I kept the first version deliberately rule-based: regexes, keywords and explicit heuristics. That is less impressive than calling an LLM, but it has an important advantage while the workflow is still being understood: every decision can be traced to a rule.</p>
+
+      <p>The roadmap includes replacing parts of that classification with an AI/ML approach, but I would rather introduce it where it improves measurable ambiguity than use it to hide a workflow I do not yet understand.</p>
+
+      <h2>PDF parsing is not document understanding</h2>
+
+      <p>Supplier purchase orders are another example. The system can inspect PDF text and extract fields such as supplier, document reference, total and line items. That sounds like a document-processing feature, but the implementation has to deal with layout noise, aliases and inconsistent formatting.</p>
+
+      <p>One practical technique is supplier normalization. The same supplier name can appear with punctuation differences, abbreviations or extraction noise. Instead of expecting one perfect string, the parser can normalize likely aliases into one known supplier identity.</p>
+
+      <p>This works surprisingly well when the document family is narrow and known. It also has a clear limit. Heuristics accumulate exceptions over time, and each exception is a signal that the parser is learning the document set manually.</p>
+
+      <p>That is one of the areas where I think an ML-assisted classifier or structured extraction model can eventually earn its complexity.</p>
+
+      <h2>Protecting manual edits was more important than adding more automation</h2>
+
+      <p>The most important design decision in this kind of tool is deciding what happens after a person corrects the machine.</p>
+
+      <p>Imagine the parser marks a quote with one status, and a team member manually changes it because they know something the email history does not. On the next sync, blindly recomputing every field can overwrite that correction.</p>
+
+      <p>So the CRM distinguishes fields that automation can refresh from fields where a manual override needs to survive. This is less glamorous than a new dashboard, but it is the kind of behaviour that decides whether people trust an internal tool.</p>
+
+      <div class="callout"><strong>Automation should reduce work, not erase judgement.</strong> If a user has to keep re-entering the same correction after every sync, the automation is creating a new job instead of removing one.</div>
+
+      <h2>Why I kept SQLite</h2>
+
+      <p>The project uses FastAPI, SQLAlchemy 2.0 and SQLite. It would be easy to replace SQLite with PostgreSQL simply because that sounds more “production”. For this deployment shape, that would also add another service to install, back up and maintain.</p>
+
+      <p>A single SQLite file gave me a very useful property: the application could be moved, backed up and run with almost no infrastructure. For a small internal team with modest concurrency, that simplicity was valuable.</p>
+
+      <p>The trade-off is obvious. SQLite is not the answer for every workload. If the application grows into many concurrent writers, multi-instance deployment or more demanding analytics, the database choice should be revisited. The point is not that SQLite is better. It is that architecture should match the actual operating environment.</p>
+
+      <h2>Keeping Excel was not a failure</h2>
+
+      <p>The quotes table is mirrored to an Excel file because some users are comfortable working from a spreadsheet. A common engineering instinct would be to remove Excel and force everything through the web interface.</p>
+
+      <p>I think that would miss the business requirement.</p>
+
+      <p>If a spreadsheet is already part of the team's mental model, a better transition can be to integrate it while making the database authoritative. The difficult part is importing edits carefully and preventing destructive sync behaviour.</p>
+
+      <p>This is another example of why internal software is often more about boundaries than screens: who can edit what, which direction data flows, and what wins when two versions disagree.</p>
+
+      <h2>Background work needs its own boundaries</h2>
+
+      <p>The application also has recurring reminders, browser push notifications, daily backups and independent ingestion pipelines. I moved startup-time responsibilities into the FastAPI lifespan rather than allowing them to run as import side effects.</p>
+
+      <p>That separation matters because importing a Python module should not unexpectedly start background threads or mutate application state. Explicit lifecycle wiring makes startup behaviour easier to reason about and easier to test.</p>
+
+      <p>The same principle applies to the two ingestion paths: the email-to-CRM worker and the supplier-PDF sync are separate concerns even though both eventually write to the same database.</p>
+
+      <h2>The public demo also documents its failures</h2>
+
+      <p>When I reworked the project into a public portfolio demo, I deliberately documented a couple of known issues instead of pretending the codebase was flawless. One endpoint has a missing import, and a manual quote-creation path has a bad interaction with the Excel export function.</p>
+
+      <p>Neither bug is something to celebrate, but documenting them is more useful than silently hiding them during an architecture-focused cleanup. A repository should make it possible for another developer to understand both what works and what still needs attention.</p>
+
+      <h2>What I learned from the project</h2>
+
+      <p>Small business software is a good place to learn engineering because the requirements do not stay inside one clean technical layer. You end up dealing with email protocols, PDF text, database models, browser notifications, spreadsheets, user overrides and deployment constraints at the same time.</p>
+
+      <p>The main lessons I took from Zentrion were:</p>
+
+      <ul>
+        <li>Do not confuse extraction with truth.</li>
+        <li>Manual corrections need an explicit place in the data model.</li>
+        <li>Simple infrastructure is a feature when it matches the scale.</li>
+        <li>Integrating an existing tool can be better than replacing it.</li>
+        <li>Heuristics are useful while the domain is still becoming clear.</li>
+        <li>Documenting known limits builds more trust than pretending they are not there.</li>
+      </ul>
+
+      <p>If I continue the project, the most interesting next step is not adding more forms or dashboards. It is improving the uncertain decisions: classifying quote state, matching supplier documents and extracting identifiers with better confidence while keeping the result explainable to the people using it.</p>
+
+      <p>That is the part of automation I find most useful: not replacing the user, but removing the repetitive work around the decisions only the user can make well.</p>
+
+      <div class="article-footer">
+        <a href="/blog/">← All articles</a>
+        <a href="https://github.com/BrunoMinhava/zentrion-crm" target="_blank" rel="noreferrer noopener">View Zentrion CRM ↗</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>
