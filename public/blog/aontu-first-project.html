@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My first Aontu project: the model clicked, the imports didn't — Bruno Minhava</title>
+  <meta name="description" content="A practical first-use review of Aontu from building a generated Documenso TypeScript SDK." />
+  <link rel="stylesheet" href="/blog/blog.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Blog navigation">
+      <a class="brand" href="/">Bruno Minhava</a>
+      <div class="nav-links">
+        <a href="/blog/">All articles</a>
+        <a href="https://github.com/BrunoMinhava/documenso-sdk" target="_blank" rel="noreferrer noopener">Repository ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <header class="article-header">
+      <div class="shell">
+        <p class="kicker">Aontu · developer experience</p>
+        <h1>My first Aontu project: the model clicked, the imports didn't</h1>
+        <p class="article-summary">I first met Aontu inside a real SDK generator task. The composition model made sense quickly; the first-run path around imports and editor setup was rougher.</p>
+        <div class="article-meta-row"><span>Bruno Minhava</span><span>08 Oct 2026</span><span>~6 min read</span></div>
+      </div>
+    </header>
+
+    <article class="article">
+      <p>I first used Aontu while building a TypeScript SDK from the Documenso v2 OpenAPI definition with the Voxgig SDK generator. I had never used the language before, so my first impression came from trying to make a real project work rather than following a tutorial.</p>
+
+      <p>At first, Aontu looked like another configuration format. That description stopped being useful quite quickly. Its main idea is unification: different parts of a model can contribute values and constraints to the same structure, and Aontu combines them when they are compatible. If they conflict, evaluation fails instead of silently letting one file overwrite another.</p>
+
+      <p>That idea grew on me. The developer experience around it was less convincing.</p>
+
+      <h2>The part that made sense</h2>
+
+      <p>In the SDK project, I needed to add my author and repository metadata without editing every generated file. The project overlay contained declarations like these:</p>
+
+<pre><code>main: kit: author: {
+  name: "Bruno Minhava"
+  url: "https://github.com/BrunoMinhava"
+}
+
+main: kit: repo: {
+  path: "BrunoMinhava/documenso-sdk"
+}</code></pre>
+
+      <p>Both statements contribute to <code>main.kit</code>. Instead of treating them as two unrelated objects, Aontu lets them become part of the same model.</p>
+
+      <p>For a generator, this is a good fit. Project-specific decisions can live in a small overlay while the larger toolchain model stays separate. I did not have to keep editing generated output and hoping my changes survived the next generation run.</p>
+
+      <p>That was the first point where I understood why Aontu exists. For a small application with a few settings, I would probably reach for something simpler. In a generator, where many files need to describe parts of one model, the composition becomes useful.</p>
+
+      <h2>The import problem was harder than it should have been</h2>
+
+      <p>The part that cost me the most time was import resolution.</p>
+
+      <p>When I ran generation in my environment, the generated SDK model contained imports in this form:</p>
+
+<pre><code>@"api/api-info.aontu"</code></pre>
+
+      <p>The file existed. The path looked correct relative to the model directory. Still, generation failed because the resolver did not find it.</p>
+
+      <p>Changing the import to an explicit relative path fixed it:</p>
+
+<pre><code>@"./api/api-info.aontu"</code></pre>
+
+      <p>The same pattern appeared in other model areas, including entity, feature, target, flow and test imports.</p>
+
+      <p>For an experienced Aontu user, adding <code>./</code> might be an obvious thing to try. For me, using the language for the first time, it was not. I was trying to work out whether the SDK structure was wrong, whether a file had not been generated, whether I had misunderstood the language, or whether the resolver was using a different base directory.</p>
+
+      <p>That is exactly the kind of problem that makes onboarding feel harder than the underlying technology actually is.</p>
+
+      <p>I would make local generated imports explicitly relative by default. If both forms are intended to work, I would expect them to resolve consistently across supported environments.</p>
+
+      <p>One thing I would keep is the detailed resolver output. Seeing the locations it had searched helped me narrow the problem down. The failure blocked generation, but at least it gave me useful information instead of a generic “file not found”.</p>
+
+      <div class="callout"><strong>Important distinction:</strong> I experienced this through a generated Voxgig SDK model. I would not call it a core Aontu bug without isolating the resolver separately. What I can say confidently is that the generated imports did not resolve in my environment until I made them explicitly relative.</div>
+
+      <h2>The tooling is more complete than I expected</h2>
+
+      <p>After the SDK task, I spent more time looking at Aontu itself.</p>
+
+      <p>The project has more tooling than I expected from a language I had only encountered inside a generator. There is formatting, validation, model inspection, provenance, JSON Schema export and an LSP. The project also maintains TypeScript and Go implementations against a shared specification.</p>
+
+      <p>That matters because a language like this can become difficult to debug very quickly. If multiple files contribute to one model, being able to ask where a value came from is much more useful than searching through files manually.</p>
+
+      <p>The LSP is also the right direction. Diagnostics, hover information and completion can move errors much closer to the point where they are introduced.</p>
+
+      <p>However, the editor onboarding still feels early. The documentation explains how to connect <code>aontu lsp</code> to VS Code, but there is no published VS Code extension that a new user can simply install and start using.</p>
+
+      <p>I think that is a meaningful gap. When someone is already learning a new modelling language, asking them to wire up a language server adds another task before they receive the benefits of the tooling.</p>
+
+      <p>A small official extension that handles syntax highlighting, the LSP and import diagnostics would make a large difference to the first experience.</p>
+
+      <h2>A detail I liked: exact decimal values</h2>
+
+      <p>One part of the language I did not use in my SDK project, but found interesting while reviewing the project, is its handling of exact decimal values.</p>
+
+<pre><code>subtotal: 0d19.99
+shipping: 0d4.01
+total: $.subtotal + $.shipping</code></pre>
+
+      <p>The <code>0d</code> values are exact base-10 decimals rather than ordinary binary floating-point values.</p>
+
+      <p>What interested me more was how the documentation treats the JSON boundary. It does not pretend that exactness automatically survives a normal <code>JSON.parse</code>. If a value needs to remain exact, the documentation recommends representing it appropriately at the boundary and validating that representation.</p>
+
+      <p>That is a small example, but I like the attitude behind it: if the system cannot guarantee something, it should not quietly claim that it can.</p>
+
+      <h2>Where I would use it</h2>
+
+      <p>I would consider Aontu when configuration is starting to behave more like a model: SDK generators, code generators, large schema systems, agent definitions, or projects where several files need to contribute to one consistent result.</p>
+
+      <p>I would not introduce it automatically into a small project with a handful of settings. A new language has a learning cost, and that cost should buy something useful.</p>
+
+      <p>My first experience with Aontu was mixed. The composition model solved a real problem cleanly and made sense once I saw it working inside the SDK generator. The import issue made the first experience rougher than it needed to be, and the editor setup still creates extra work for someone arriving fresh.</p>
+
+      <p>I would use Aontu again for the kind of problem it was designed for. Before recommending it more broadly, I would want the path rules and editor experience to become boring.</p>
+
+      <p><strong>For a configuration and modelling language, boring is a compliment.</strong></p>
+
+      <div class="article-footer">
+        <a href="/blog/">← All articles</a>
+        <a href="https://github.com/BrunoMinhava/documenso-sdk" target="_blank" rel="noreferrer noopener">View the Documenso SDK ↗</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>
