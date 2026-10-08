@@ -62,7 +62,7 @@ export default function HUD() {
 
       {/* Atalhos */}
       <nav aria-label="Navegação principal" className="site-nav pointer-events-auto">
-        {[['#servicos', 'Serviços'], ['#wonderstatus', 'Projetos'], ['#curriculo', 'Currículo'], ['#contacto', 'Contacto']].map(([href, label]) => (
+        {[['#servicos', 'Serviços'], ['#wonderstatus', 'Projetos'], ['/blog/', 'Blog'], ['#curriculo', 'Currículo'], ['#contacto', 'Contacto']].map(([href, label]) => (
           <a key={href} className={`t-micro link ${dim}`} href={href} data-cursor-label="Ver">{label}</a>
         ))}
       </nav>
